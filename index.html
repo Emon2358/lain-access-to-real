@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>lain access to real</title>
+<style>
+    @keyframes typing {
+        from { width: 0; }
+        to { width: 100%; }
+    }
+    @keyframes blink-caret {
+        from, to { border-color: transparent; }
+        50% { border-color: #00ffff; }
+    }
+    body {
+        background-color: #1a1a1a;
+        color: #00ffff;
+        font-family: 'Courier New', Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+    h1 {
+        margin-bottom: 20px;
+        text-shadow: 0 0 5px #00ffff;
+    }
+    #video-container {
+        position: relative;
+        width: 80%;
+        max-width: 600px;
+    }
+    video, img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+        z-index: 1;
+    }
+    #gif-image {
+        z-index: 2;
+        display: none;
+    }
+    #bubble {
+        position: absolute;
+        top: 20px;
+        right: 10px;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #00ffff;
+        border-radius: 10px;
+        color: #00ffff;
+        z-index: 3;
+        overflow: hidden;
+        white-space: nowrap;
+        width: 0;
+        animation: typing 5s steps(40, end) forwards, blink-caret 0.75s step-end infinite;
+    }
+</style>
+</head>
+<body>
+<h1>lain access to real</h1>
+<div id="video-container">
+    <video id="external-camera" autoplay playsinline></video>
+    <img id="gif-image" src="https://static.myfigurecollection.net/upload/pictures/2023/12/05/3829677.gif" alt="GIF Image">
+    <div id="bubble">私はここにいるのだから一緒にいるんだよ</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('external-camera');
+    const gifImage = document.getElementById('gif-image');
+
+    navigator.mediaDevices.getUserMedia({
+        video: {
+            facingMode: { exact: "environment" } // 外カメラを指定
+        }
+    })
+    .then(stream => {
+        video.srcObject = stream;
+    })
+    .catch(error => {
+        console.error('カメラのアクセスに失敗しました', error);
+    });
+
+    video.addEventListener('play', () => {
+        const { videoWidth, videoHeight } = video;
+        const canvas = document.createElement('canvas');
+        canvas.width = videoWidth;
+        canvas.height = videoHeight;
+        const context = canvas.getContext('2d');
+
+        function drawFrame() {
+            if (video.paused || video.ended) {
+                return;
+            }
+            context.drawImage(video, 0, 0, videoWidth, videoHeight);
+            context.drawImage(gifImage, 0, 0, videoWidth, videoHeight); // GIF画像を重ねて描画
+            requestAnimationFrame(drawFrame);
+        }
+        drawFrame();
+    });
+
+    gifImage.onload = () => {
+        gifImage.style.display = 'block';
+    };
+});
+</script>
+</body>
+</html>
